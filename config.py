@@ -241,6 +241,7 @@ class Parameters:
 
         # metrics
         self.save_logits = False
+        self.save_probs = True
         self.aggregate_metrics = False
 
         # update parameters with user-defined arguments
@@ -257,7 +258,6 @@ class Parameters:
             User-defined arguments.
         """
         params = args if type(args) == dict else vars(args)
-
         # update parameters by property names
         for key in params:
             if hasattr(self, key):
@@ -267,12 +267,13 @@ class Parameters:
                 else:
                     value = params[key]
                 setattr(self, key, value)
-
         # update colour label
         self.ch_label = 'grayscale' if self.ch == 1 else 'colour'
 
         # reset tiles per image to defaults
         self.tiles_per_image = int(sum(self.tiling_factor * self.scales))
+
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         return self
 

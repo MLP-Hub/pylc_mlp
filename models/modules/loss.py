@@ -53,7 +53,7 @@ class MultiLoss(torch.nn.Module):
         self.ce = 0.
         self.dsc = 0.
         self.fl = 0.
-        
+
         self.device = torch.device(defaults.device)
 
         # initialize cross entropy loss weights

@@ -42,6 +42,7 @@ class Evaluator:
         self.fid = None
         self.logits = None
         self.mask_pred = None
+        self.probs_pred = None
         self.results = []
 
         # data buffers
@@ -60,8 +61,9 @@ class Evaluator:
         self.masks_dir = utils.mk_path(os.path.join(self.output_dir, 'masks'))
         self.logits_dir = utils.mk_path(os.path.join(self.output_dir, 'logits'))
         self.metrics_dir = utils.mk_path(os.path.join(self.output_dir, 'metrics'))
+        self.probs_dir = utils.mk_path(os.path.join(self.output_dir, 'probs'))
 
-    def load(self, mask_pred, meta, mask_true_path=None, scale=None):
+    def load(self, mask_pred, probs_pred, meta, mask_true_path=None, scale=None):
         """
         Initialize predicted/ground truth image masks for
         evaluation metrics.
@@ -83,6 +85,7 @@ class Evaluator:
 
         # reconstruct unnormalized model outputs into mask data array
         self.mask_pred = mask_pred
+        self.probs_pred = probs_pred
 
         if mask_true_path:
             # load ground-truth data
@@ -181,6 +184,7 @@ class Evaluator:
         """
         self.logits = None
         self.mask_pred = None
+        self.probs_pred = None
         self.results = []
         self.meta = {}
         self.y_true = None
@@ -269,7 +273,7 @@ class Evaluator:
         """
 
         # Build mask file path
-        mask_file = os.path.join(self.masks_dir, self.fid + '.png')
+        mask_file = os.path.join(self.masks_dir, self.fid + '_mask.png')
 
         if self.mask_pred is None:
             print("Mask has not been reconstructed. Image save cancelled.")
@@ -281,4 +285,26 @@ class Evaluator:
             print("Output mask saved to: \n\t{}.".format(mask_file))
 
             return mask_file
+        return
+
+    def save_probs(self):
+        """
+        Saves the probabilities for the most probable class at each pixel to file.
+
+        Returns
+        -------
+        probs_file: np.array
+            Output probability data.
+        """
+        probs_file = os.path.join(self.probs_dir, self.fid + '_probs.npy')
+
+        if self.probs_pred is None:
+            print("Probability save cancelled.")
+            return
+
+        if utils.confirm_write_file(probs_file):
+            np.save(probs_file, self.probs_pred)
+            print("Output probabilities saved to: \n\t{}.".format(probs_file))
+            return probs_file
+
         return

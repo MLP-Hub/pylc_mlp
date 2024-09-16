@@ -248,6 +248,21 @@ def reconstruct(logits, meta):
     # row index (set to offset height)
     row_idx = offset
 
+    #for tile in tiles:
+    #    tileshape = tile.shape[1:]
+    #    indices = np.indices(tileshape)
+    #    center = np.array(tileshape) // 2
+    #    distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
+
+
+        #for lc in range(tile.shape[0]):
+        #    a = tile[lc]/(1+np.exp(0.1*distances-18))
+        #    b = tile[lc]*((1/(1+np.exp(-0.1*distances+18)))+1)
+            #a = tile[lc]*np.log10((-distances+390)/20)/np.log10(19.5) #*(distances**(-0.25))
+            #b = tile[lc]/np.log10((-distances+390)/20)/np.log10(19.5) #*(distances**(0.25))
+        #    tile[lc] = np.where(tile[lc]>0, a, b)
+            #tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
+
     for i in range(n_strides_in_col):
         # Get initial tile in row
         t_current = tiles[i * n_strides_in_row]
@@ -310,13 +325,20 @@ def reconstruct(logits, meta):
 
     # colourize to palette
     mask_fullsized = np.expand_dims(mask_fullsized, axis=0)
+
     _mask_pred = colourize(np.argmax(mask_fullsized, axis=1), n_classes, palette=palette)
+
+    probs_reconstructed = torch.max(torch.nn.functional.softmax(torch.tensor(mask_fullsized), dim=1), dim=1).values.numpy()
+
+    #resixe probabilities to full size
+    probs_reconstructed = cv2.resize(
+        probs_reconstructed.astype(np.float16)[0,:,:], (w_full, h_full), interpolation=cv2.INTER_NEAREST)
 
     # resize mask to full size
     mask_reconstructed = cv2.resize(
         _mask_pred[0].astype('float32'), (w_full, h_full), interpolation=cv2.INTER_NEAREST)
 
-    return mask_reconstructed
+    return mask_reconstructed, probs_reconstructed
 
 
 def colourize(img, n_classes, palette=None):
@@ -660,9 +682,9 @@ def collate(img_dir, mask_dir=None):
     for img_fname in img_paths.keys():
 
         # find mask filename
-        if img_fname in mask_paths.keys():
+        if img_fname+"_mask" in mask_paths.keys():
             img_path = img_paths[img_fname]
-            mask_path = mask_paths[img_fname]
+            mask_path = mask_paths[img_fname+"_mask"]
             # append to file list
             files += [{'img': img_path, 'mask': mask_path}]
             # remove paths from lists

@@ -328,6 +328,12 @@ def get_parser():
         help='Save model output logits to file.'
     )
     parser_test.add_argument(
+        '--save_probs',
+        action='store_const',
+        const=True,
+        help='Save model output probabilities to file.'
+    )
+    parser_test.add_argument(
         '--aggregate_metrics',
         action='store_const',
         const=True,

@@ -29,6 +29,7 @@ def tester(args):
     args: dict
         User-defined options.
     """
+
     # trained model path
     model_path = args.model
 
@@ -84,11 +85,11 @@ def tester(args):
                 model.iter += 1
 
         # load results into evaluator
-        results = utils.reconstruct(model_outputs, extractor.get_meta())
+        results, probs = utils.reconstruct(model_outputs, extractor.get_meta())
         # - save full-sized predicted mask image to file
         if mask_file:
             evaluator.load(
-                results,
+                results, probs,
                 extractor.get_meta(),
                 mask_true_path=mask_file,
                 scale=params.scale
@@ -100,11 +101,14 @@ def tester(args):
                 print("\nStarting evaluation ... ")
                 evaluator.evaluate().save_metrics()
         else:
-            evaluator.load(results, extractor.get_meta()).save_image()
+            evaluator.load(results, probs, extractor.get_meta()).save_image()
 
         # save unnormalized models outputs (i.e. raw logits) to file (if requested)
         if args.save_logits:
             evaluator.save_logits(model_outputs)
+
+        if args.save_probs:
+            evaluator.save_probs()
 
         # Reset evaluator
         evaluator.reset()

@@ -343,8 +343,8 @@ class Model:
 
         # normalize
         x = self.normalize_image(x)
-        x = x.to(self.device)
-        y = y.to(self.device)
+        x = x.to(self.device).float()
+        y = y.to(self.device).float()
 
         # crop target mask to fit output size (UNet)
         if self.meta.arch == 'unet':
@@ -370,7 +370,7 @@ class Model:
 
         # normalize
         x = self.normalize_image(x, default=self.meta.normalize_default)
-        x = x.to(self.device)
+        x = x.to(self.device).float()
 
         # stack single-channel input tensors (Deeplab)
         if self.meta.ch == 1 and self.meta.arch == 'deeplab':

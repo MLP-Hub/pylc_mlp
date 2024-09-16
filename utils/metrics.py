@@ -63,12 +63,12 @@ class Metrics:
 
     def f1_score(self, y_true, y_pred):
         """ Compute Weighted F1 Score (DSC) """
-        self.results['f1'] = f1_score(y_true, y_pred, average='weighted', zero_division=0)
+        self.results['f1'] = f1_score(y_true, y_pred, average='macro', zero_division=0)
         print('{:30s}{}'.format('Weighted F1 Score', self.results['f1']))
 
     def jaccard(self, y_true, y_pred):
         """ Compute Weighted Jaccard (ioU) """
-        self.results['iou'] = jaccard_score(y_true, y_pred, average='weighted')
+        self.results['iou'] = jaccard_score(y_true, y_pred, average='macro')
         print('{:30s}{}'.format('Weighted IoU', self.results['iou']))
 
     def mcc(self, y_true, y_pred):
