@@ -1,7 +1,7 @@
 {
   "classes": [
         {
-          "label": "Not categorized",
+          "label": "Not Categorized",
           "code": "NC",
           "colour": {
             "rgb": [
@@ -12,18 +12,18 @@
             "hex": "#000000"
           }
         },
-	#{
-        #  "label": "Anthropogenic",
-        #  "code": "AN",
-        #  "colour": {
-        #    "rgb": [
-        #      255,
-        #      245,
-        #      0
-        #    ],
-        #    "hex": "#fff500"
-        #  }
-        #},
+	      {
+          "label": "Anthropogenic",
+          "code": "AN",
+          "colour": {
+            "rgb": [
+              255,
+              245,
+              0
+            ],
+            "hex": "#fff500"
+          }
+        },
         {
           "label": "Broadleaf/Mixedwood",
           "code": "B-MW",
@@ -61,8 +61,8 @@
           }
         },
         {
-          "label": "Sand/Gravel/Rock",
-          "code": "S-G-R",
+          "label": "Rock/Barren",
+          "code": "R-B",
           "colour": {
             "rgb": [
               139,
@@ -109,8 +109,8 @@
           }
         },
         {
-          "label": "Regenerating Area",
-          "code": "RA",
+          "label": "Recently Burned",
+          "code": "RB",
           "colour": {
             "rgb": [
               255,
@@ -120,8 +120,5 @@
             "hex": "#ff0004"
           }
         }
-      ],
-  "maps": {
-    "b-to-a": [0, 1, 1, 2, 3, 3, 4, 5, 6, 7, 8]
-  }
+      ]
 }

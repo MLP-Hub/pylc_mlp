@@ -199,7 +199,10 @@ def adjust_to_tile(img, tile_size, stride, ch, interpolate=cv2.INTER_AREA):
     b = (h_scaled - h)//2
     bb = h_scaled - h - b
 
-    img_resized = np.pad(img, pad_width = ((b,bb), (a,aa)), mode = 'reflect')
+    if ch == 1:
+        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa)), mode = 'reflect')
+    elif ch == 3:
+        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa), (0,0)), mode = 'reflect')
 
     return img_resized, img_resized.shape[1], img_resized.shape[0]
 
@@ -246,17 +249,17 @@ def reconstruct(logits, meta):
     # row index (set to offset height)
     row_idx = offset
 
-    for tile in tiles:
-       tileshape = tile.shape[1:]
-       indices = np.indices(tileshape)
-       center = np.array(tileshape) // 2
-       distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
-
-        for lc in range(tile.shape[0]):
-           a = tile[lc]/(1+np.exp(0.1*distances-20))
-           b = tile[lc]*((1/(1+np.exp(-0.1*distances+20)))+1)
-           tile[lc] = np.where(tile[lc]>0, a, b)
-            tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
+    # for tile in tiles:
+    #    tileshape = tile.shape[1:]
+    #    indices = np.indices(tileshape)
+    #    center = np.array(tileshape) // 2
+    #    distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
+    #
+    #     for lc in range(tile.shape[0]):
+    #        a = tile[lc]/(1+np.exp(0.1*distances-20))
+    #        b = tile[lc]*((1/(1+np.exp(-0.1*distances+20)))+1)
+    #        tile[lc] = np.where(tile[lc]>0, a, b)
+    #         tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
 
     for i in range(n_strides_in_col):
         # Get initial tile in row
@@ -331,23 +334,27 @@ def reconstruct(logits, meta):
     b = (h - h_full)//2
     bb = h - h_full - b
 
-    if bb == 0 and aa == 0:
-        probs_reconstructed = probs_reconstructed[0,b:,a:].astype('float16')
-    elif aa == 0:
-        probs_reconstructed = probs_reconstructed[0,b:-bb,a:].astype('float16')
-    elif bb == 0:
-        probs_reconstructed = probs_reconstructed[0,b:,a:-aa].astype('float16')
-    else:
-        probs_reconstructed = probs_reconstructed[0,b:-bb,a:-aa].astype('float16')
+    probs_reconstructed = probs_reconstructed[0,b:probs_reconstructed.shape[1]-bb,a:probs_reconstructed.shape[2]-aa].astype('float16')
 
-    if bb == 0 and aa == 0:
-        mask_reconstructed = _mask_pred[0,b:,a:,:].astype('float32')
-    elif aa == 0:
-        mask_reconstructed = _mask_pred[0,b:-bb,a:,:].astype('float32')
-    elif bb == 0:
-        mask_reconstructed = _mask_pred[0,b:,a:-aa,:].astype('float32')
-    else:
-        mask_reconstructed = _mask_pred[0,b:-bb,a:-aa,:].astype('float32')
+    # if bb == 0 and aa == 0:
+    #     probs_reconstructed = probs_reconstructed[0,b:,a:].astype('float16')
+    # elif aa == 0:
+    #     probs_reconstructed = probs_reconstructed[0,b:-bb,a:].astype('float16')
+    # elif bb == 0:
+    #     probs_reconstructed = probs_reconstructed[0,b:,a:-aa].astype('float16')
+    # else:
+    #     probs_reconstructed = probs_reconstructed[0,b:-bb,a:-aa].astype('float16')
+
+    mask_reconstructed = _mask_pred[0,b:_mask_pred.shape[1]-bb,a:_mask_pred.shape[2]-aa,:].astype('float32')
+
+    # if bb == 0 and aa == 0:
+    #     mask_reconstructed = _mask_pred[0,b:,a:,:].astype('float32')
+    # elif aa == 0:
+    #     mask_reconstructed = _mask_pred[0,b:-bb,a:,:].astype('float32')
+    # elif bb == 0:
+    #     mask_reconstructed = _mask_pred[0,b:,a:-aa,:].astype('float32')
+    # else:
+    #     mask_reconstructed = _mask_pred[0,b:-bb,a:-aa,:].astype('float32')
 
     return mask_reconstructed, probs_reconstructed
 
