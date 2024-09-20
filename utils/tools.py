@@ -336,25 +336,7 @@ def reconstruct(logits, meta):
 
     probs_reconstructed = probs_reconstructed[0,b:probs_reconstructed.shape[1]-bb,a:probs_reconstructed.shape[2]-aa].astype('float16')
 
-    # if bb == 0 and aa == 0:
-    #     probs_reconstructed = probs_reconstructed[0,b:,a:].astype('float16')
-    # elif aa == 0:
-    #     probs_reconstructed = probs_reconstructed[0,b:-bb,a:].astype('float16')
-    # elif bb == 0:
-    #     probs_reconstructed = probs_reconstructed[0,b:,a:-aa].astype('float16')
-    # else:
-    #     probs_reconstructed = probs_reconstructed[0,b:-bb,a:-aa].astype('float16')
-
     mask_reconstructed = _mask_pred[0,b:_mask_pred.shape[1]-bb,a:_mask_pred.shape[2]-aa,:].astype('float32')
-
-    # if bb == 0 and aa == 0:
-    #     mask_reconstructed = _mask_pred[0,b:,a:,:].astype('float32')
-    # elif aa == 0:
-    #     mask_reconstructed = _mask_pred[0,b:-bb,a:,:].astype('float32')
-    # elif bb == 0:
-    #     mask_reconstructed = _mask_pred[0,b:,a:-aa,:].astype('float32')
-    # else:
-    #     mask_reconstructed = _mask_pred[0,b:-bb,a:-aa,:].astype('float32')
 
     return mask_reconstructed, probs_reconstructed
 
