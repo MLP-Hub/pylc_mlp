@@ -138,7 +138,7 @@ class Parameters:
         self.scale = 1.
         # self.scales = [0.2, 0.5, 1.]
         self.scales = [1.]
-        self.tiling_factor = 700
+        self.tiling_factor = 2000
         self.tiles_per_image = int(sum(self.tiling_factor * self.scales))
         self.tile_px_count = self.tile_size * self.tile_size
 
@@ -271,6 +271,7 @@ class Parameters:
         self.ch_label = 'grayscale' if self.ch == 1 else 'colour'
 
         # reset tiles per image to defaults
+        self.tiling_factor = 2000
         self.tiles_per_image = int(sum(self.tiling_factor * self.scales))
 
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
