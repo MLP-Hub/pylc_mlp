@@ -181,29 +181,27 @@ def adjust_to_tile(img, tile_size, stride, ch, interpolate=cv2.INTER_AREA):
     # Get full-sized dimensions
     w = img.shape[1]
     h = img.shape[0]
-    aspect = w / h
 
     assert tile_size % stride == 0 and stride <= tile_size, "Tile size must be multiple of stride."
 
-    # Get width scaling factor for tiling
-    w_scaled = (w // tile_size) * tile_size
-    h_scaled = (ceil(w_scaled / aspect) // tile_size) * tile_size
-    dim = (w_scaled, h_scaled)
+    # Get padded width for tiling
+    if (w-tile_size)%stride == 0:
+        w_scaled = w
+    else:
+        w_scaled = (w // stride) * stride + tile_size
+    if (h-tile_size)%stride == 0:
+        h_scaled = h
+    else:
+        h_scaled = (h // stride) * stride + tile_size
 
-    # resize image to fit tiled dimensions
-    img_resized = cv2.resize(img, dim, interpolation=interpolate)
-    h_resized = img_resized.shape[0]
-    h_tgt = int(h_resized / tile_size) * tile_size
+    a = (w_scaled-w)//2
+    aa = w_scaled - w - a
+    b = (h_scaled - h)//2
+    bb = h_scaled - h - b
 
-    # crop top of image to match aspect ratio
-    img_cropped = None
-    h_crop = h_resized - h_tgt
-    if ch == 1:
-        img_cropped = img_resized[h_crop:h_resized, :]
-    elif ch == 3:
-        img_cropped = img_resized[h_crop:h_resized, :, :]
+    img_resized = np.pad(img, pad_width = ((b,bb), (a,aa)), mode = 'reflect')
 
-    return img_cropped, img_cropped.shape[1], img_cropped.shape[0], h_crop
+    return img_resized, img_resized.shape[1], img_resized.shape[0]
 
 
 def reconstruct(logits, meta):
@@ -248,20 +246,17 @@ def reconstruct(logits, meta):
     # row index (set to offset height)
     row_idx = offset
 
-    #for tile in tiles:
-    #    tileshape = tile.shape[1:]
-    #    indices = np.indices(tileshape)
-    #    center = np.array(tileshape) // 2
-    #    distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
+    for tile in tiles:
+       tileshape = tile.shape[1:]
+       indices = np.indices(tileshape)
+       center = np.array(tileshape) // 2
+       distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
 
-
-        #for lc in range(tile.shape[0]):
-        #    a = tile[lc]/(1+np.exp(0.1*distances-18))
-        #    b = tile[lc]*((1/(1+np.exp(-0.1*distances+18)))+1)
-            #a = tile[lc]*np.log10((-distances+390)/20)/np.log10(19.5) #*(distances**(-0.25))
-            #b = tile[lc]/np.log10((-distances+390)/20)/np.log10(19.5) #*(distances**(0.25))
-        #    tile[lc] = np.where(tile[lc]>0, a, b)
-            #tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
+        for lc in range(tile.shape[0]):
+           a = tile[lc]/(1+np.exp(0.1*distances-20))
+           b = tile[lc]*((1/(1+np.exp(-0.1*distances+20)))+1)
+           tile[lc] = np.where(tile[lc]>0, a, b)
+            tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
 
     for i in range(n_strides_in_col):
         # Get initial tile in row
@@ -330,13 +325,29 @@ def reconstruct(logits, meta):
 
     probs_reconstructed = torch.max(torch.nn.functional.softmax(torch.tensor(mask_fullsized), dim=1), dim=1).values.numpy()
 
-    #resixe probabilities to full size
-    probs_reconstructed = cv2.resize(
-        probs_reconstructed.astype(np.float16)[0,:,:], (w_full, h_full), interpolation=cv2.INTER_NEAREST)
+    #crop mask and probabilities to image size
+    a = (w - w_full)//2
+    aa = w - w_full - a
+    b = (h - h_full)//2
+    bb = h - h_full - b
 
-    # resize mask to full size
-    mask_reconstructed = cv2.resize(
-        _mask_pred[0].astype('float32'), (w_full, h_full), interpolation=cv2.INTER_NEAREST)
+    if bb == 0 and aa == 0:
+        probs_reconstructed = probs_reconstructed[0,b:,a:].astype('float16')
+    elif aa == 0:
+        probs_reconstructed = probs_reconstructed[0,b:-bb,a:].astype('float16')
+    elif bb == 0:
+        probs_reconstructed = probs_reconstructed[0,b:,a:-aa].astype('float16')
+    else:
+        probs_reconstructed = probs_reconstructed[0,b:-bb,a:-aa].astype('float16')
+
+    if bb == 0 and aa == 0:
+        mask_reconstructed = _mask_pred[0,b:,a:,:].astype('float32')
+    elif aa == 0:
+        mask_reconstructed = _mask_pred[0,b:-bb,a:,:].astype('float32')
+    elif bb == 0:
+        mask_reconstructed = _mask_pred[0,b:,a:-aa,:].astype('float32')
+    else:
+        mask_reconstructed = _mask_pred[0,b:-bb,a:-aa,:].astype('float32')
 
     return mask_reconstructed, probs_reconstructed
 

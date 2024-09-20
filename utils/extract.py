@@ -151,7 +151,7 @@ class Extractor(object):
                 )
 
                 # adjust image size to fit tile size (optional)
-                img, w_fitted, h_fitted, offset = utils.adjust_to_tile(
+                img, w_fitted, h_fitted = utils.adjust_to_tile(
                     img, self.meta.tile_size, self.meta.stride, self.meta.ch) \
                     if self.fit else (img, w_scaled, h_scaled, 0)
 
@@ -167,7 +167,7 @@ class Extractor(object):
                     'h_scaled': h_scaled,
                     'w_fitted': w_fitted,
                     'h_fitted': h_fitted,
-                    'offset': offset
+                    'offset': 0
                 }
 
                 # print results to console and store in metadata
