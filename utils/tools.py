@@ -249,17 +249,18 @@ def reconstruct(logits, meta):
     # row index (set to offset height)
     row_idx = offset
 
-    # for tile in tiles:
-    #    tileshape = tile.shape[1:]
-    #    indices = np.indices(tileshape)
-    #    center = np.array(tileshape) // 2
-    #    distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
-    #
-    #     for lc in range(tile.shape[0]):
-    #        a = tile[lc]/(1+np.exp(0.1*distances-20))
-    #        b = tile[lc]*((1/(1+np.exp(-0.1*distances+20)))+1)
-    #        tile[lc] = np.where(tile[lc]>0, a, b)
-    #         tile[lc] = tile[lc]*(distances**(-0.25)) #*np.log10((-distances+370)/20)/np.log10(18.5)
+    # anti-tile artifact code
+    for tile in tiles:
+        tileshape = tile.shape[1:]
+        indices = np.indices(tileshape)
+        center = np.array(tileshape) // 2
+        distances = np.sqrt(np.sum((indices - center[:, np.newaxis, np.newaxis])**2, axis=0))
+
+
+        for lc in range(tile.shape[0]):
+            a = tile[lc]/(1+np.exp(0.1*distances-20))
+            b = tile[lc]*((1/(1+np.exp(-0.1*distances+20)))+1)
+            tile[lc] = np.where(tile[lc]>0, a, b)
 
     for i in range(n_strides_in_col):
         # Get initial tile in row
