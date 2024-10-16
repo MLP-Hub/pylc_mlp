@@ -200,9 +200,9 @@ def adjust_to_tile(img, tile_size, stride, ch, interpolate=cv2.INTER_AREA):
     bb = h_scaled - h - b
 
     if ch == 1:
-        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa)), mode = 'reflect')
+        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa)), mode = 'symmetric')
     elif ch == 3:
-        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa), (0,0)), mode = 'reflect')
+        img_resized = np.pad(img, pad_width = ((b,bb), (a,aa), (0,0)), mode = 'symmetric')
 
     return img_resized, img_resized.shape[1], img_resized.shape[0]
 
@@ -305,11 +305,11 @@ def reconstruct(logits, meta):
             r_olap_merged = (r_olap_top + r_olap_prev) / 2
 
         # Top row: crop by bottom overlap (to be averaged)
-        if i == 0:
+        if i == 0 and n_strides_in_col >1:
             # Crop current row by bottom overlap size
             r_current = r_current[:, 0:r_current_height - olap_size, :]
         # Otherwise: Merge top overlap with previous
-        else:
+        elif n_strides_in_col > 1:
             # Replace top overlap with averaged overlap in current row
             np.copyto(r_current[:, 0:olap_size, :], r_olap_merged)
 
