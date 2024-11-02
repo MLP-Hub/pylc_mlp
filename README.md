@@ -1,5 +1,5 @@
 
-# PyLC Landscape Classifier
+# PyLC (Python Landscape Classifier)
 
 __Semantic segmentation for land cover classification of oblique ground-based photography__
 
