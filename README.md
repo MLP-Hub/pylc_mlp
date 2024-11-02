@@ -6,6 +6,8 @@ __Semantic segmentation for land cover classification of oblique ground-based ph
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 
+This is the Mountain Legacy Project hosted version and continued development of the original [PyLC developed by Spencer Rose](https://github.com/scrose/pylc).
+ 
  Reference: Rose, Spencer, _An evaluation of deep learning semantic segmentation
  for land cover classification of oblique ground-based photography_,
  MSc. Thesis 2020, University of Victoria.
